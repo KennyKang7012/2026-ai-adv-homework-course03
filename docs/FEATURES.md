@@ -15,6 +15,7 @@
 | 前台頁面 | ✅ 完成 | EJS + Tailwind CSS + 響應式設計（768px 斷點） |
 | 後台頁面 | ✅ 完成 | EJS + Tailwind CSS |
 | 測試 | ✅ 完成 | Unit（Vitest）+ Integration（Vitest + Supertest，記憶體 SQLite 隔離）+ E2E（Playwright Test），共 9 個測試檔案 |
+| CI（GitHub Actions） | ✅ 完成 | push/PR（main）自動執行 unit + integration 測試（`.github/workflows/test.yml`） |
 | API 文件 | ✅ 完成 | Swagger/OpenAPI 生成、Postman Collection 產生器 |
 
 ---

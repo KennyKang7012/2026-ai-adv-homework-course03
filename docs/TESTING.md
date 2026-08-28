@@ -61,6 +61,16 @@ npm run test:e2e          # tests/e2e/**（需先手動啟動伺服器）
 npm run postman           # 重新產生 openapi.json 後轉出 postman_collection.json
 ```
 
+## CI（GitHub Actions）
+
+**設定檔**：`.github/workflows/test.yml`
+
+- **觸發時機**：`push`（`main`）與 `pull_request`（目標 `main`）
+- **執行內容**：兩個明確步驟——`Run unit tests`（`npm run test:unit`）、`Run integration tests`（`npm run test:integration`）
+- **不含**：Playwright E2E 測試、任何伺服器啟動步驟（supertest 直接呼叫 Express app 物件，不需要真實 HTTP server）
+- **環境變數**：job 層級明確設定 `NODE_ENV=test`、`JWT_SECRET`（固定測試用字串）、`ADMIN_EMAIL`、`ADMIN_PASSWORD`。**關鍵原因**：`src/middleware/authMiddleware.js`、`src/routes/authRoutes.js` 對 `process.env.JWT_SECRET` 沒有任何 fallback 預設值；本機測試能過是因為開發者本機有不進版控的 `.env` 檔，CI runner 上沒有這個檔案，若不在 workflow 裡明確給值，`npm run test:integration` 會因為 JWT 簽章/驗證失敗而全面失敗
+- **驗證**：`gh pr checks <PR 編號>` 或 `gh run list` / `gh run watch` 查看實際執行結果
+
 ## Postman Collection
 
 `npm run postman` = `npm run openapi && node generate-postman.js`：先重新產生 `openapi.json`，再由 `generate-postman.js`（repo 根目錄，純腳本、無框架依賴）讀取並轉出 `postman_collection.json`（Postman Collection v2.1）。

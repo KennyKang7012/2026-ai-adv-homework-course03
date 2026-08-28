@@ -3,6 +3,9 @@
 ## 目錄結構
 
 ```
+├── .github/
+│   └── workflows/
+│       └── test.yml                # GitHub Actions CI：push/PR（main）觸發，跑 unit + integration 測試
 ├── app.js                          # Express 應用設定：view engine、靜態檔案、middleware 串接、路由掛載、404/錯誤處理
 ├── server.js                       # 伺服器啟動入口，監聽 PORT（預設 3001）
 ├── package.json                    # 專案設定與 npm scripts

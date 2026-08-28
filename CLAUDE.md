@@ -23,6 +23,7 @@ npm run postman          # 重新產生 openapi.json 後轉出 postman_collectio
 - 訂單建立使用 `db.transaction()` 原子操作：建立訂單 → 寫入品項快照 → 扣庫存 → 清空購物車
 - 資料庫為 SQLite（better-sqlite3 同步 API），WAL 模式，foreign keys 啟用
 - 功能開發使用 docs/plans/ 記錄計畫；完成後移至 docs/plans/archive/
+- push/PR 到 main 會觸發 GitHub Actions（`.github/workflows/test.yml`）自動執行 unit + integration 測試
 
 ## 詳細文件
 - ./docs/README.md — 項目介紹與快速開始

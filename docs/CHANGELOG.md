@@ -2,6 +2,12 @@
 
 所有重大變更皆記錄於此文件。格式參考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## [1.5.0] - 2026-08-29
+
+### 新增
+- **GitHub Actions CI**：新增 `.github/workflows/test.yml`，`push`（main）與 `pull_request`（目標 main）時自動執行兩個明確步驟：`npm run test:unit`、`npm run test:integration`（不含 E2E，不啟動任何服務）
+- CI 環境明確設定 `JWT_SECRET` 等環境變數（測試用固定值，非正式金鑰），修正程式碼對 `JWT_SECRET` 無 fallback、CI 無本機 `.env` 導致 integration 測試會失敗的問題
+
 ## [1.4.0] - 2026-08-28
 
 ### 新增
