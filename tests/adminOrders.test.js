@@ -24,6 +24,7 @@ describe('Admin Orders API', () => {
         recipientName: '管理員測試收件人',
         recipientEmail: 'admin-test@example.com',
         recipientAddress: '台北市管理員測試路 456 號',
+        shippingMethod: 'home_delivery',
       });
 
     orderId = orderRes.body.data.id;

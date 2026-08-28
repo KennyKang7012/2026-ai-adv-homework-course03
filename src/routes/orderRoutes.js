@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../database');
 const authMiddleware = require('../middleware/authMiddleware');
 const { queryTradeInfo, verifyCheckMacValue, ECPAY_CONFIG } = require('../utils/ecpay');
+const { calculateShippingFee } = require('../utils/shipping');
 
 const router = express.Router();
 
@@ -41,7 +42,7 @@ function generateOrderNo() {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [recipientName, recipientEmail, recipientAddress]
+ *             required: [recipientName, recipientEmail, recipientAddress, shippingMethod]
  *             properties:
  *               recipientName:
  *                 type: string
@@ -50,6 +51,18 @@ function generateOrderNo() {
  *                 format: email
  *               recipientAddress:
  *                 type: string
+ *               shippingMethod:
+ *                 type: string
+ *                 enum: [home_delivery, cvs]
+ *                 description: 配送方式：宅配到府或超商取貨
+ *               isRemoteArea:
+ *                 type: boolean
+ *                 default: false
+ *                 description: 是否為偏遠地區（加收 200 元）
+ *               isExpress:
+ *                 type: boolean
+ *                 default: false
+ *                 description: 是否為當日急件（加收 250 元）
  *     responses:
  *       201:
  *         description: 訂單建立成功
@@ -65,8 +78,22 @@ function generateOrderNo() {
  *                       type: string
  *                     order_no:
  *                       type: string
+ *                     subtotal:
+ *                       type: integer
+ *                       description: 商品小計（不含運費）
+ *                     shipping_fee:
+ *                       type: integer
+ *                       description: 運費（基本運費 + 附加費）
+ *                     shipping_method:
+ *                       type: string
+ *                       enum: [home_delivery, cvs]
+ *                     is_remote_area:
+ *                       type: boolean
+ *                     is_express:
+ *                       type: boolean
  *                     total_amount:
  *                       type: integer
+ *                       description: 訂單總額（商品小計 + 運費）
  *                     status:
  *                       type: string
  *                     items:
@@ -88,10 +115,10 @@ function generateOrderNo() {
  *                 message:
  *                   type: string
  *       400:
- *         description: 購物車為空或庫存不足或收件資訊缺失
+ *         description: 購物車為空或庫存不足或收件資訊缺失或配送方式不正確
  */
 router.post('/', (req, res) => {
-  const { recipientName, recipientEmail, recipientAddress } = req.body;
+  const { recipientName, recipientEmail, recipientAddress, shippingMethod, isRemoteArea, isExpress } = req.body;
   const userId = req.user.userId;
 
   if (!recipientName || !recipientEmail || !recipientAddress) {
@@ -139,10 +166,29 @@ router.post('/', (req, res) => {
     });
   }
 
-  // Calculate total
-  const totalAmount = cartItems.reduce(
+  // Calculate merchandise subtotal
+  const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product_price * item.quantity, 0
   );
+
+  // Calculate shipping fee
+  let shippingFee;
+  try {
+    shippingFee = calculateShippingFee({
+      shippingMethod,
+      subtotal,
+      isRemoteArea: Boolean(isRemoteArea),
+      isExpress: Boolean(isExpress)
+    }).shippingFee;
+  } catch (err) {
+    return res.status(400).json({
+      data: null,
+      error: 'VALIDATION_ERROR',
+      message: err.message
+    });
+  }
+
+  const totalAmount = subtotal + shippingFee;
 
   const orderId = uuidv4();
   const orderNo = generateOrderNo();
@@ -151,9 +197,9 @@ router.post('/', (req, res) => {
   // Transaction: create order, order items, deduct stock, clear cart
   const createOrder = db.transaction(() => {
     db.prepare(
-      `INSERT INTO orders (id, order_no, user_id, recipient_name, recipient_email, recipient_address, total_amount, merchant_trade_no)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(orderId, orderNo, userId, recipientName, recipientEmail, recipientAddress, totalAmount, merchantTradeNo);
+      `INSERT INTO orders (id, order_no, user_id, recipient_name, recipient_email, recipient_address, total_amount, merchant_trade_no, shipping_fee, shipping_method, is_remote_area, is_express)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(orderId, orderNo, userId, recipientName, recipientEmail, recipientAddress, totalAmount, merchantTradeNo, shippingFee, shippingMethod, isRemoteArea ? 1 : 0, isExpress ? 1 : 0);
 
     const insertItem = db.prepare(
       `INSERT INTO order_items (id, order_id, product_id, product_name, product_price, quantity)
@@ -181,6 +227,11 @@ router.post('/', (req, res) => {
     data: {
       id: order.id,
       order_no: order.order_no,
+      subtotal,
+      shipping_fee: order.shipping_fee,
+      shipping_method: order.shipping_method,
+      is_remote_area: !!order.is_remote_area,
+      is_express: !!order.is_express,
       total_amount: order.total_amount,
       status: order.status,
       items: orderItems,
@@ -221,6 +272,8 @@ router.post('/', (req, res) => {
  *                             type: string
  *                           total_amount:
  *                             type: integer
+ *                           shipping_fee:
+ *                             type: integer
  *                           status:
  *                             type: string
  *                           created_at:
@@ -233,7 +286,7 @@ router.post('/', (req, res) => {
  */
 router.get('/', (req, res) => {
   const orders = db.prepare(
-    'SELECT id, order_no, total_amount, status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC'
+    'SELECT id, order_no, total_amount, shipping_fee, status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC'
   ).all(req.user.userId);
 
   const getItems = db.prepare(
@@ -286,6 +339,15 @@ router.get('/', (req, res) => {
  *                       type: string
  *                     recipient_address:
  *                       type: string
+ *                     shipping_fee:
+ *                       type: integer
+ *                     shipping_method:
+ *                       type: string
+ *                       enum: [home_delivery, cvs]
+ *                     is_remote_area:
+ *                       type: integer
+ *                     is_express:
+ *                       type: integer
  *                     total_amount:
  *                       type: integer
  *                     status:

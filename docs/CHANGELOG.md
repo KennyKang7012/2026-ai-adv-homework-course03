@@ -2,6 +2,22 @@
 
 所有重大變更皆記錄於此文件。格式參考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## [1.3.0] - 2026-08-28
+
+### 新增
+- **運費計算模組**：新增 `src/utils/shipping.js`，提供 `calculateShippingFee()` 與相關常數，計算宅配/超商取貨運費、滿額免運、偏遠地區與當日急件附加費
+- **訂單新增運費欄位**：`orders` 表新增 `shipping_fee`、`shipping_method`、`is_remote_area`、`is_express` 四個欄位
+- **`POST /api/orders` 新增必填欄位** `shippingMethod`（`home_delivery` / `cvs`）與選填欄位 `isRemoteArea`/`isExpress`；回應新增 `subtotal`、`shipping_fee`、`shipping_method`、`is_remote_area`、`is_express`
+- **結帳頁面**：新增「配送方式」區塊（宅配到府／超商取貨單選、偏遠地區／當日急件勾選），運費與總計即時反映所選組合
+- **新測試**：`tests/shipping.test.js`（10 案例），涵蓋宅配基本運費、超商取貨費、滿額免運門檻、偏遠地區/急件附加費及其組合情境
+
+### Changed
+- **`total_amount` 語意變更**：現為「商品小計 + 運費」，不再只是純商品小計，連帶影響綠界 ECPay 實際收款金額（自動生效，無需額外改動付款流程）
+- **`GET /api/orders`**：回應加入 `shipping_fee`
+- **購物車頁面**：免運提示文案與運費估算數字，由舊規則（滿 500 免運／運費 150）修正為新規則（滿 1,500 免運／運費 120）
+
+---
+
 ## [1.2.1] - 2026-06-06
 
 ### Fixed

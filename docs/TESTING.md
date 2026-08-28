@@ -69,6 +69,7 @@ export default defineConfig({
       files: [              // 指定執行順序
         'tests/auth.test.js',
         'tests/products.test.js',
+        'tests/shipping.test.js',
         'tests/cart.test.js',
         'tests/orders.test.js',
         'tests/adminProducts.test.js',
@@ -87,6 +88,7 @@ export default defineConfig({
 | `tests/setup.js` | 輔助函式（非測試檔案） | — |
 | `tests/auth.test.js` | 註冊、登入、重複 email、個人資料 | 無（首先執行，建立種子資料） |
 | `tests/products.test.js` | 商品列表、分頁、詳情、404 | 依賴種子商品存在 |
+| `tests/shipping.test.js` | 運費計算（`calculateShippingFee`）純函式單元測試 | 無（不依賴 DB/app） |
 | `tests/cart.test.js` | 加入購物車、查看、更新數量、刪除、訪客 vs 登入 | 依賴商品存在 + 使用者認證 |
 | `tests/orders.test.js` | 建立訂單、空購物車、認證要求、訂單列表、詳情、付款 | 依賴購物車有品項 |
 | `tests/adminProducts.test.js` | 後台商品列表、新增、更新、刪除、權限檢查 | 依賴 admin 帳號 |
@@ -99,13 +101,15 @@ auth.test.js          ← 第 1 順位：建立使用者，驗證認證機制
     ↓
 products.test.js      ← 第 2 順位：驗證種子商品（依賴 DB 初始化）
     ↓
-cart.test.js          ← 第 3 順位：需要商品 + 認證 token
+shipping.test.js      ← 第 3 順位：純函式單元測試，不依賴前面狀態，可任意插入
     ↓
-orders.test.js        ← 第 4 順位：需要購物車有品項
+cart.test.js          ← 第 4 順位：需要商品 + 認證 token
     ↓
-adminProducts.test.js ← 第 5 順位：需要 admin token
+orders.test.js        ← 第 5 順位：需要購物車有品項
     ↓
-adminOrders.test.js   ← 第 6 順位：需要訂單存在 + admin token
+adminProducts.test.js ← 第 6 順位：需要 admin token
+    ↓
+adminOrders.test.js   ← 第 7 順位：需要訂單存在 + admin token
 ```
 
 **為何要循序執行**：測試間存在資料依賴（例如 cart 測試新增的品項會在 orders 測試中用來建立訂單）。`fileParallelism: false` 確保測試檔案依序執行，避免競態條件。
@@ -198,6 +202,7 @@ sequence: {
   files: [
     'tests/auth.test.js',
     'tests/products.test.js',
+    'tests/shipping.test.js',
     'tests/cart.test.js',
     'tests/orders.test.js',
     'tests/adminProducts.test.js',

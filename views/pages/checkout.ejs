@@ -61,6 +61,37 @@
           </div>
         </div>
 
+        <div style="border:1px solid #E5E7EB; padding:36px; margin-bottom:28px;">
+          <h2 class="font-display" style="font-size:20px; font-weight:700; color:#1A1A1A; margin-bottom:24px;">配送方式</h2>
+
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; gap:24px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio" v-model="form.shippingMethod" value="home_delivery"
+                       @change="form.isRemoteArea = false; form.isExpress = false">
+                <span class="font-body" style="font-size:14px; color:#1A1A1A;">宅配到府</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio" v-model="form.shippingMethod" value="cvs"
+                       @change="form.isRemoteArea = false; form.isExpress = false">
+                <span class="font-body" style="font-size:14px; color:#1A1A1A;">超商取貨</span>
+              </label>
+            </div>
+
+            <div v-if="form.shippingMethod === 'home_delivery'"
+                 style="display:flex; flex-direction:column; gap:12px; padding-top:16px; border-top:1px solid #E5E7EB;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" v-model="form.isRemoteArea">
+                <span class="font-body" style="font-size:13px; color:#4B5563;">偏遠地區（加收 NT$ 200）</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" v-model="form.isExpress">
+                <span class="font-body" style="font-size:13px; color:#4B5563;">當日急件（加收 NT$ 250）</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -90,7 +121,7 @@
         </div>
         <div style="display:flex; justify-content:space-between; padding:8px 0;">
           <span class="font-body" style="font-size:13px; color:#4B5563;">運費</span>
-          <span class="font-body" style="font-size:13px; color:#1A1A1A;">{{ cartTotal >= 500 ? '免運' : 'NT$ 150' }}</span>
+          <span class="font-body" style="font-size:13px; color:#1A1A1A;">{{ shippingFee.shippingFee === 0 ? '免運' : ('NT$ ' + shippingFee.shippingFee.toLocaleString()) }}</span>
         </div>
         <div style="display:flex; justify-content:space-between; padding:8px 0;">
           <span class="font-body" style="font-size:13px; color:#4B5563;">折扣</span>
@@ -101,7 +132,7 @@
       <div style="border-top:1px solid #E5E7EB; padding:20px 0 24px; display:flex; justify-content:space-between; align-items:center;">
         <span class="font-ui" style="font-size:12px; font-weight:700; color:#1A1A1A; letter-spacing:.12em; text-transform:uppercase;">總計</span>
         <span class="font-display" style="font-size:24px; font-weight:700; color:#FF4FB6;">
-          NT$ {{ (cartTotal + (cartTotal >= 500 ? 0 : 150)).toLocaleString() }}
+          NT$ {{ orderTotal.toLocaleString() }}
         </span>
       </div>
 

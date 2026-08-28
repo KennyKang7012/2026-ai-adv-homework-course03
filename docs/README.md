@@ -72,7 +72,7 @@ npm run openapi
 | [DEVELOPMENT.md](./DEVELOPMENT.md) | 開發規範、命名規則、計畫歸檔流程 |
 | [FEATURES.md](./FEATURES.md) | 功能列表與完成狀態（含行為描述） |
 | [TESTING.md](./TESTING.md) | 測試規範與指南（含 E2E Playwright Skill） |
-| [CHANGELOG.md](./CHANGELOG.md) | 更新日誌（目前版本：v1.2.1） |
+| [CHANGELOG.md](./CHANGELOG.md) | 更新日誌（目前版本：v1.3.0） |
 | [DESIGN_GAP.md](./DESIGN_GAP.md) | 設計稿 vs 實作完整比對報告 |
 | [PROJECT_JOURNEY.md](./PROJECT_JOURNEY.md) | 專案開發歷程知識庫（階段記錄 + 錯誤修正） |
 | [design/](./design/) | 頁面截圖（11 張桌面 + 4 張手機） |
