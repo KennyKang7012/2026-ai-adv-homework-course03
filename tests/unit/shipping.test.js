@@ -1,7 +1,7 @@
 const {
   SHIPPING_METHODS,
   calculateShippingFee,
-} = require('../src/utils/shipping');
+} = require('../../src/utils/shipping');
 
 describe('Shipping fee calculation', () => {
   it('宅配基本運費 120 元', () => {

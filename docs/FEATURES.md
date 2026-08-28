@@ -14,8 +14,8 @@
 | 後台訂單管理 | ✅ 完成 | 訂單查詢與狀態篩選 |
 | 前台頁面 | ✅ 完成 | EJS + Tailwind CSS + 響應式設計（768px 斷點） |
 | 後台頁面 | ✅ 完成 | EJS + Tailwind CSS |
-| 測試 | ✅ 完成 | Vitest + supertest，7 個測試檔案 |
-| API 文件 | ✅ 完成 | Swagger/OpenAPI 生成 |
+| 測試 | ✅ 完成 | Unit（Vitest）+ Integration（Vitest + Supertest，記憶體 SQLite 隔離）+ E2E（Playwright Test），共 9 個測試檔案 |
+| API 文件 | ✅ 完成 | Swagger/OpenAPI 生成、Postman Collection 產生器 |
 
 ---
 
@@ -357,7 +357,7 @@
 
 ### 測試
 
-`tests/shipping.test.js`（10 案例）：宅配基本運費、超商取貨費、商品小計 1,499/1,500 元情境、超商取貨滿額免運、偏遠地區附加費、當日急件附加費、多附加費疊加、滿額免運與附加費同時成立、invalid method 拋錯。
+`tests/unit/shipping.test.js`（10 案例）：宅配基本運費、超商取貨費、商品小計 1,499/1,500 元情境、超商取貨滿額免運、偏遠地區附加費、當日急件附加費、多附加費疊加、滿額免運與附加費同時成立、invalid method 拋錯。
 
 ---
 

@@ -5,12 +5,16 @@
 
 ## 常用指令
 ```bash
-npm run start          # 編譯 CSS 並啟動伺服器
-npm run dev:server     # 僅啟動伺服器（不編譯 CSS）
-npm run dev:css        # Tailwind CSS watch 模式
-npm run css:build      # 編譯並壓縮 CSS
-npm run test           # 執行測試（vitest run，循序執行）
-npm run openapi        # 從 JSDoc 生成 openapi.json
+npm run start            # 編譯 CSS 並啟動伺服器
+npm run dev:server       # 僅啟動伺服器（不編譯 CSS）
+npm run dev:css          # Tailwind CSS watch 模式
+npm run css:build        # 編譯並壓縮 CSS
+npm run test             # 執行 unit + integration 測試（不含 e2e）
+npm run test:unit        # 僅純函式單元測試（tests/unit/**，零依賴）
+npm run test:integration # 整合測試（tests/integration/**，記憶體 SQLite，不動 database.sqlite）
+npm run test:e2e         # Playwright E2E（tests/e2e/**，需先手動 npm run start）
+npm run openapi          # 從 JSDoc 生成 openapi.json
+npm run postman          # 重新產生 openapi.json 後轉出 postman_collection.json
 ```
 
 ## 關鍵規則

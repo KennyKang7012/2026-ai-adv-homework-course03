@@ -2,6 +2,19 @@
 
 所有重大變更皆記錄於此文件。格式參考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## [1.4.0] - 2026-08-28
+
+### 新增
+- **完整測試流程**：新增 `npm run test:unit`（純函式單元測試）、`npm run test:integration`（API + DB 整合測試，記憶體 SQLite 隔離，不觸碰 `database.sqlite`）、`npm run test:e2e`（Playwright Test，對已啟動的伺服器測試）、`npm run postman`（從 `openapi.json` 產生 Postman Collection）
+- **測試資料夾重整**：`tests/` 拆分為 `tests/unit/`、`tests/integration/`、`tests/e2e/`，並新增 `vitest.integration.config.js`、`playwright.config.js`
+- **`src/database.js`**：`dbPath` 改讀 `DB_PATH` 環境變數，支援指向記憶體 SQLite 供整合測試使用
+- **`tests/integration/orders.test.js`**：新增訂單/訂單品項 DB 直查驗證、運費與庫存正確性驗證、購物車清空驗證、STOCK_INSUFFICIENT 邊界情境（驗證失敗時不留下不完整訂單、不誤扣庫存）
+- **E2E 測試**：`tests/e2e/checkout-payment.spec.js`（完整金流 Happy Path，含綠界模擬付款與成功截圖）、`tests/e2e/checkout-edge-cases.spec.js`（E1~E4 異常情境）
+- **`generate-postman.js`**：讀取 `openapi.json` 轉出 Postman Collection v2.1，含 `baseUrl`/`token`/`sessionId` 變數、登入自動存 token、購物車 dualAuth 支援
+
+### Changed
+- **`npm run test` 語意變更**：現為 `test:unit && test:integration` 組合指令（不含 e2e），行為與過去單純 `vitest run` 不同
+
 ## [1.3.0] - 2026-08-28
 
 ### 新增

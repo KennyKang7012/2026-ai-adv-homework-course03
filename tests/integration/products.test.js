@@ -1,4 +1,4 @@
-const { app, request } = require('./setup');
+const { app, request } = require('../setup');
 
 describe('Products API', () => {
   let productId;

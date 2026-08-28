@@ -1,4 +1,4 @@
-const { app, request, registerUser } = require('./setup');
+const { app, request, registerUser } = require('../setup');
 
 describe('Cart API', () => {
   const sessionId = 'test-session-' + Date.now();
