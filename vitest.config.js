@@ -8,6 +8,7 @@ export default defineConfig({
       files: [
         'tests/auth.test.js',
         'tests/products.test.js',
+        'tests/shipping.test.js',
         'tests/cart.test.js',
         'tests/orders.test.js',
         'tests/adminProducts.test.js',

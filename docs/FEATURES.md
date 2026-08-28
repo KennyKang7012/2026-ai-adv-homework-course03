@@ -8,12 +8,13 @@
 | 商品瀏覽 | ✅ 完成 | 公開商品列表與詳情 |
 | 購物車管理 | ✅ 完成 | 雙模式認證（JWT / Session ID） |
 | 訂單管理 | ✅ 完成 | 建立、查詢、模擬付款 |
+| 運費計算 | ✅ 完成 | 宅配/超商運費計算、滿額免運、偏遠地區與急件附加費 |
 | 綠界金流串接 | ✅ 完成 | ECPay AIO 付款、QueryTradeInfo 查詢驗證 |
 | 後台商品管理 | ✅ 完成 | 商品 CRUD |
 | 後台訂單管理 | ✅ 完成 | 訂單查詢與狀態篩選 |
 | 前台頁面 | ✅ 完成 | EJS + Tailwind CSS + 響應式設計（768px 斷點） |
 | 後台頁面 | ✅ 完成 | EJS + Tailwind CSS |
-| 測試 | ✅ 完成 | Vitest + supertest，6 個測試檔案 |
+| 測試 | ✅ 完成 | Vitest + supertest，7 個測試檔案 |
 | API 文件 | ✅ 完成 | Swagger/OpenAPI 生成 |
 
 ---
@@ -231,6 +232,9 @@
 | recipientName | string | 是 | 非空 |
 | recipientEmail | string | 是 | 符合 email 正則 |
 | recipientAddress | string | 是 | 非空 |
+| shippingMethod | string | 是 | `home_delivery`（宅配到府）或 `cvs`（超商取貨） |
+| isRemoteArea | boolean | 否 | 預設 `false`，是否為偏遠地區 |
+| isExpress | boolean | 否 | 預設 `false`，是否為當日急件 |
 
 **業務邏輯**：
 1. 驗證收件人三個欄位皆存在
@@ -238,10 +242,31 @@
 3. 從 `cart_items JOIN products` 取得購物車品項（僅查 `user_id`，不含 session）
 4. 購物車為空 → 400 CART_EMPTY
 5. 逐品項檢查庫存，不足者收集名稱 → 400「以下商品庫存不足：名稱1, 名稱2」
-6. 計算 `totalAmount = Σ(price × quantity)`
-7. 生成 `orderNo = ORD-YYYYMMDD-{5碼UUID大寫}`
-8. **Transaction**：INSERT order → INSERT order_items（快照名稱+價格） → UPDATE stock → DELETE cart_items
-9. 回傳 201 + 訂單詳情
+6. 計算 `subtotal = Σ(price × quantity)`
+7. 呼叫 `calculateShippingFee({ shippingMethod, subtotal, isRemoteArea, isExpress })`（詳見下方「運費計算 Shipping」章節）取得 `shippingFee`；`shippingMethod` 缺失或不合法時回傳 400 VALIDATION_ERROR
+8. 計算 `totalAmount = subtotal + shippingFee`
+9. 生成 `orderNo = ORD-YYYYMMDD-{5碼UUID大寫}`
+10. **Transaction**：INSERT order（含 `shipping_fee`/`shipping_method`/`is_remote_area`/`is_express`） → INSERT order_items（快照名稱+價格） → UPDATE stock → DELETE cart_items
+11. 回傳 201 + 訂單詳情（含運費明細）
+
+**回應結構**：
+```json
+{
+  "data": {
+    "id": "order_id",
+    "order_no": "ORD-20260828-A1B2C",
+    "subtotal": 1680,
+    "shipping_fee": 120,
+    "shipping_method": "home_delivery",
+    "is_remote_area": false,
+    "is_express": false,
+    "total_amount": 1800,
+    "status": "pending",
+    "items": [ /* ... */ ],
+    "created_at": "2026-08-28 12:00:00"
+  }
+}
+```
 
 **錯誤情境**：
 
@@ -249,6 +274,7 @@
 |--------|--------|------|
 | 400 | VALIDATION_ERROR | 缺少收件人欄位 |
 | 400 | VALIDATION_ERROR | Email 格式不正確 |
+| 400 | VALIDATION_ERROR | shippingMethod 缺失或不是 home_delivery / cvs |
 | 400 | CART_EMPTY | 購物車為空 |
 | 400 | STOCK_INSUFFICIENT | 庫存不足（訊息中列出所有不足商品名稱） |
 
@@ -256,7 +282,7 @@
 
 **行為描述**：回傳當前使用者的所有訂單，依建立時間降序排列。無分頁。
 
-**回應欄位**：id, order_no, total_amount, status, created_at
+**回應欄位**：id, order_no, total_amount, shipping_fee, status, created_at
 
 ### GET /api/orders/:id — 訂單詳情
 
@@ -294,6 +320,44 @@
 | 400 | VALIDATION_ERROR | action 不是 success 或 fail |
 | 400 | INVALID_STATUS | 訂單狀態不是 pending |
 | 404 | NOT_FOUND | 訂單不存在或非本人所有 |
+
+---
+
+## 運費計算 Shipping
+
+> **模組位置**：`src/utils/shipping.js`，於 `POST /api/orders` 建立訂單流程中呼叫，運費計算結果會計入 `total_amount`（訂單總額 = 商品小計 + 運費），並同步影響綠界 ECPay 實際收款金額。
+
+### 費率規則
+
+| 條件 | 金額 | 說明 |
+|------|------|------|
+| 宅配到府基本運費 | 120 元 | 商品小計 ≥ 1,500 元時免收 |
+| 超商取貨 | 60 元 | 商品小計 ≥ 1,500 元時同樣免收（與宅配共用同一滿額免運門檻） |
+| 偏遠地區附加費 | +200 元 | 疊加，不受滿額免運規則影響 |
+| 當日急件附加費 | +250 元 | 疊加，不受滿額免運規則影響 |
+
+**計算順序**：先判斷商品小計是否 ≥ 1,500 元（成立則基本運費為 0，不論配送方式），否則依配送方式收取 120 或 60 元基本運費；偏遠地區與當日急件附加費一律疊加在基本運費之上。
+
+### 工具模組（src/utils/shipping.js）
+
+| 函式 / 常數 | 說明 |
+|------|------|
+| `SHIPPING_METHODS` | `{ HOME_DELIVERY: 'home_delivery', CVS: 'cvs' }` |
+| `HOME_DELIVERY_BASE_FEE` | 120（宅配基本運費） |
+| `CVS_FEE` | 60（超商取貨費用） |
+| `FREE_SHIPPING_THRESHOLD` | 1500（滿額免運門檻） |
+| `REMOTE_AREA_SURCHARGE` | 200（偏遠地區附加費） |
+| `EXPRESS_SURCHARGE` | 250（當日急件附加費） |
+| `calculateShippingFee({ shippingMethod, subtotal, isRemoteArea, isExpress })` | 回傳 `{ baseFee, surcharge, shippingFee }`；`shippingMethod` 缺失或不合法時 throw `Error` |
+
+### 前端整合
+
+- 結帳頁（`/checkout`）新增「配送方式」區塊：宅配到府／超商取貨單選，選宅配時可額外勾選偏遠地區／當日急件；訂單摘要的運費與總計會即時反映所選組合（前端複製一份相同常數與計算邏輯，實際收費仍以後端計算為準）。
+- 購物車頁（`/cart`）尚未選擇配送方式，維持以宅配基本運費（120 元）與滿額免運門檻（1,500 元）作為估算基準。
+
+### 測試
+
+`tests/shipping.test.js`（10 案例）：宅配基本運費、超商取貨費、商品小計 1,499/1,500 元情境、超商取貨滿額免運、偏遠地區附加費、當日急件附加費、多附加費疊加、滿額免運與附加費同時成立、invalid method 拋錯。
 
 ---
 

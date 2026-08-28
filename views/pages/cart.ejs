@@ -24,15 +24,15 @@
       <div class="page-main-col" style="flex:1; padding:40px 80px; border-right:1px solid #E5E7EB;">
 
         <!-- Free-shipping banner -->
-        <div v-if="total < 500"
+        <div v-if="total < 1500"
              style="display:flex; align-items:center; gap:10px; background:#FFF0F8; border:1px solid #FFB3DC; padding:12px 16px; border-radius:4px; margin-bottom:28px;">
           <span style="font-size:16px;">🌸</span>
-          <p class="font-body" style="font-size:13px; color:#FF4FB6;">再買 NT$ {{ (500 - total).toLocaleString() }} 即可享免運費！</p>
+          <p class="font-body" style="font-size:13px; color:#FF4FB6;">再買 NT$ {{ (1500 - total).toLocaleString() }} 即可享宅配免基本運費！</p>
         </div>
         <div v-else
              style="display:flex; align-items:center; gap:10px; background:#F0FDF4; border:1px solid #A7F3D0; padding:12px 16px; border-radius:4px; margin-bottom:28px;">
           <span style="color:#10B981; font-size:15px;">✓</span>
-          <p class="font-ui" style="font-size:12px; color:#10B981; letter-spacing:.08em;">已達免運門檻！</p>
+          <p class="font-ui" style="font-size:12px; color:#10B981; letter-spacing:.08em;">已達宅配免運門檻！</p>
         </div>
 
         <!-- Column headers -->
@@ -98,7 +98,7 @@
           </div>
           <div style="display:flex; justify-content:space-between; padding:10px 0;">
             <span class="font-body" style="font-size:14px; color:#4B5563;">運費</span>
-            <span class="font-body" style="font-size:14px; color:#1A1A1A;">{{ total >= 500 ? '免運' : 'NT$ 150' }}</span>
+            <span class="font-body" style="font-size:14px; color:#1A1A1A;">{{ total >= 1500 ? '免運' : 'NT$ 120' }}</span>
           </div>
           <div style="display:flex; justify-content:space-between; padding:10px 0;">
             <span class="font-body" style="font-size:14px; color:#4B5563;">折扣</span>
@@ -108,7 +108,7 @@
 
         <div style="border-top:1px solid #E5E7EB; padding:20px 0 24px; display:flex; justify-content:space-between; align-items:center;">
           <span class="font-ui" style="font-size:12px; font-weight:700; color:#1A1A1A; letter-spacing:.12em; text-transform:uppercase;">總計</span>
-          <span class="font-display" style="font-size:26px; font-weight:700; color:#FF4FB6;">NT$ {{ (total + (total >= 500 ? 0 : 150)).toLocaleString() }}</span>
+          <span class="font-display" style="font-size:26px; font-weight:700; color:#FF4FB6;">NT$ {{ (total + (total >= 1500 ? 0 : 120)).toLocaleString() }}</span>
         </div>
 
         <button @click="goCheckout" class="btn-accent" style="width:100%; font-size:13px; padding:16px 0; justify-content:center; margin-bottom:12px;">

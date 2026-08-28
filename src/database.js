@@ -78,6 +78,26 @@ function initializeDatabase() {
     db.exec(`ALTER TABLE orders ADD COLUMN payment_method TEXT`);
   } catch (e) {}
 
+  // Migration: add shipping_fee column for shipping fee calculation feature
+  try {
+    db.exec(`ALTER TABLE orders ADD COLUMN shipping_fee INTEGER NOT NULL DEFAULT 0`);
+  } catch (e) {}
+
+  // Migration: add shipping_method column
+  try {
+    db.exec(`ALTER TABLE orders ADD COLUMN shipping_method TEXT`);
+  } catch (e) {}
+
+  // Migration: add is_remote_area column
+  try {
+    db.exec(`ALTER TABLE orders ADD COLUMN is_remote_area INTEGER NOT NULL DEFAULT 0`);
+  } catch (e) {}
+
+  // Migration: add is_express column
+  try {
+    db.exec(`ALTER TABLE orders ADD COLUMN is_express INTEGER NOT NULL DEFAULT 0`);
+  } catch (e) {}
+
   // Seed data
   seedAdminUser();
   seedProducts();

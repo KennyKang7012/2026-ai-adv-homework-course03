@@ -29,6 +29,7 @@ describe('Orders API', () => {
         recipientName: '測試收件人',
         recipientEmail: 'recipient@example.com',
         recipientAddress: '台北市測試路 123 號',
+        shippingMethod: 'home_delivery',
       });
 
     expect(res.status).toBe(201);
@@ -37,10 +38,14 @@ describe('Orders API', () => {
     expect(res.body).toHaveProperty('message');
     expect(res.body.data).toHaveProperty('id');
     expect(res.body.data).toHaveProperty('order_no');
+    expect(res.body.data).toHaveProperty('subtotal');
+    expect(res.body.data).toHaveProperty('shipping_fee');
+    expect(res.body.data).toHaveProperty('shipping_method', 'home_delivery');
     expect(res.body.data).toHaveProperty('total_amount');
     expect(res.body.data).toHaveProperty('status', 'pending');
     expect(res.body.data).toHaveProperty('items');
     expect(Array.isArray(res.body.data.items)).toBe(true);
+    expect(res.body.data.total_amount).toBe(res.body.data.subtotal + res.body.data.shipping_fee);
 
     orderId = res.body.data.id;
   });
@@ -54,11 +59,12 @@ describe('Orders API', () => {
         recipientName: '測試收件人',
         recipientEmail: 'recipient@example.com',
         recipientAddress: '台北市測試路 123 號',
+        shippingMethod: 'home_delivery',
       });
 
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('data', null);
-    expect(res.body).toHaveProperty('error');
+    expect(res.body.error).toBe('CART_EMPTY');
   });
 
   it('should fail to create order without auth', async () => {
@@ -68,6 +74,7 @@ describe('Orders API', () => {
         recipientName: '測試收件人',
         recipientEmail: 'recipient@example.com',
         recipientAddress: '台北市測試路 123 號',
+        shippingMethod: 'home_delivery',
       });
 
     expect(res.status).toBe(401);
