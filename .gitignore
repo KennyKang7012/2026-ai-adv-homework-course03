@@ -2,8 +2,7 @@
 node_modules/
 
 # Build output
-backend-project/public/css/output.css
-
+public/css/output.css
 
 # SQLite database files
 *.db
@@ -37,8 +36,13 @@ coverage/
 *.swp
 
 .claude/*.local.json
-public/css/output.css
 qa.md
 
-# Playwright MCP 暫存快照
+# Playwright（MCP 互動暫存快照 + @playwright/test 執行輸出，含付款成功截圖）
 .playwright-mcp/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Postman collection（由 npm run postman 產生，不入版控）
+postman_collection.json

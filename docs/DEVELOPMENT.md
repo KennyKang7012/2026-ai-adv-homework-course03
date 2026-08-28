@@ -37,8 +37,9 @@ module.exports = db;
 ```
 
 注意事項：
-- `vitest.config.js` 使用 ESM（`import`），因為 Vitest 要求
-- 測試檔案（`tests/*.test.js`）使用 CommonJS
+- `vitest.config.js`/`vitest.integration.config.js`/`playwright.config.js` 使用 ESM（`import`），因為 Vitest / Playwright 要求
+- `tests/unit/`、`tests/integration/` 下的測試檔案（`*.test.js`）使用 CommonJS
+- `tests/e2e/` 下的 Playwright 測試檔案（`*.spec.js`）使用 ESM（`import { test, expect } from '@playwright/test'`）
 - 前端 JS（`public/js/`）在瀏覽器中以 `<script>` 載入，使用全域變數模式
 
 ## 新增 API 端點步驟
@@ -94,8 +95,8 @@ router.get('/profile', authMiddleware, (req, res) => { ... });
  */
 ```
 
-6. **撰寫測試**：在 `tests/` 下新增對應測試檔案
-7. **更新 vitest.config.js**：在 `sequence.files` 中加入新測試檔案（注意順序依賴）
+6. **撰寫測試**：需要 DB/app（HTTP + DB）的 API 測試放在 `tests/integration/` 下新增對應測試檔案；純函式測試放 `tests/unit/`
+7. **更新 vitest.integration.config.js**：在 `sequence.files` 中加入新測試檔案（注意順序依賴，`tests/unit/**` 無需維護順序）
 
 ## 新增 Middleware 步驟
 

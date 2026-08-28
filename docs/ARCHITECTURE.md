@@ -6,9 +6,12 @@
 ├── app.js                          # Express 應用設定：view engine、靜態檔案、middleware 串接、路由掛載、404/錯誤處理
 ├── server.js                       # 伺服器啟動入口，監聽 PORT（預設 3001）
 ├── package.json                    # 專案設定與 npm scripts
-├── vitest.config.js                # Vitest 測試設定（循序執行、檔案順序）
+├── vitest.config.js                # Vitest 設定（僅 tests/unit/**，零依賴純函式測試）
+├── vitest.integration.config.js    # Vitest 設定（僅 tests/integration/**，記憶體 SQLite、循序執行）
+├── playwright.config.js            # Playwright Test 設定（tests/e2e/**，對已啟動的伺服器測試，無 webServer）
 ├── swagger-config.js               # Swagger/OpenAPI 設定（OpenAPI 3.0.3）
 ├── generate-openapi.js             # 從 JSDoc 註解生成 openapi.json
+├── generate-postman.js             # 讀取 openapi.json 轉出 Postman Collection v2.1
 ├── database.sqlite                 # SQLite 資料庫檔案（自動建立）
 ├── .env                            # 環境變數（不進版控）
 ├── .env.example                    # 環境變數範本
@@ -83,12 +86,18 @@
 │
 └── tests/
     ├── setup.js                    # 測試輔助：getAdminToken()、registerUser()
-    ├── auth.test.js                # 認證 API 測試
-    ├── products.test.js            # 商品 API 測試
-    ├── cart.test.js                # 購物車 API 測試
-    ├── orders.test.js              # 訂單 API 測試
-    ├── adminProducts.test.js       # 後台商品 API 測試
-    └── adminOrders.test.js         # 後台訂單 API 測試
+    ├── unit/
+    │   └── shipping.test.js        # 運費計算純函式測試（零 DB/app 依賴）
+    ├── integration/                # 記憶體 SQLite（:memory:），不觸碰 database.sqlite
+    │   ├── auth.test.js            # 認證 API 測試
+    │   ├── products.test.js        # 商品 API 測試
+    │   ├── cart.test.js            # 購物車 API 測試
+    │   ├── orders.test.js          # 訂單 API 測試（含 DB 直查、庫存不足邊界情境）
+    │   ├── adminProducts.test.js   # 後台商品 API 測試
+    │   └── adminOrders.test.js     # 後台訂單 API 測試
+    └── e2e/                        # Playwright Test，對已啟動的伺服器測試（走真正的 database.sqlite）
+        ├── checkout-payment.spec.js      # 完整金流 Happy Path（含綠界模擬付款）
+        └── checkout-edge-cases.spec.js   # 異常情境（空車、未登入、表單驗證、404）
 ```
 
 ## 啟動流程

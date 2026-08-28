@@ -1,4 +1,4 @@
-const { app, request, getAdminToken, registerUser } = require('./setup');
+const { app, request, getAdminToken, registerUser } = require('../setup');
 
 describe('Admin Orders API', () => {
   let adminToken;

@@ -39,10 +39,12 @@ npm run dev:server   # 啟動 Express 伺服器
 npm run dev:css      # Tailwind CSS watch 模式
 
 # 5. 執行測試
-npm run test
+npm run test           # unit + integration
+npm run test:e2e       # 需先手動啟動伺服器（步驟 3）
 
-# 6. 生成 OpenAPI 文件
+# 6. 生成 OpenAPI 文件 / Postman Collection
 npm run openapi
+npm run postman
 ```
 
 ### 預設帳號
@@ -61,8 +63,12 @@ npm run openapi
 | `npm run dev:server` | 僅啟動伺服器 |
 | `npm run dev:css` | Tailwind CSS watch 模式 |
 | `npm run css:build` | 編譯並壓縮 CSS |
-| `npm run test` | 執行全部測試 |
+| `npm run test` | 執行 unit + integration 測試 |
+| `npm run test:unit` | 純函式單元測試 |
+| `npm run test:integration` | API + DB 整合測試（記憶體 SQLite，不動 database.sqlite） |
+| `npm run test:e2e` | Playwright E2E（需先手動啟動伺服器） |
 | `npm run openapi` | 生成 openapi.json |
+| `npm run postman` | 生成 Postman Collection |
 
 ## 文件索引
 
@@ -71,8 +77,8 @@ npm run openapi
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | 架構、目錄結構、資料流 |
 | [DEVELOPMENT.md](./DEVELOPMENT.md) | 開發規範、命名規則、計畫歸檔流程 |
 | [FEATURES.md](./FEATURES.md) | 功能列表與完成狀態（含行為描述） |
-| [TESTING.md](./TESTING.md) | 測試規範與指南（含 E2E Playwright Skill） |
-| [CHANGELOG.md](./CHANGELOG.md) | 更新日誌（目前版本：v1.3.0） |
+| [TESTING.md](./TESTING.md) | 測試規範與指南（Unit / Integration / E2E 三層架構 + Postman Collection） |
+| [CHANGELOG.md](./CHANGELOG.md) | 更新日誌（目前版本：v1.4.0） |
 | [DESIGN_GAP.md](./DESIGN_GAP.md) | 設計稿 vs 實作完整比對報告 |
 | [PROJECT_JOURNEY.md](./PROJECT_JOURNEY.md) | 專案開發歷程知識庫（階段記錄 + 錯誤修正） |
 | [design/](./design/) | 頁面截圖（11 張桌面 + 4 張手機） |
